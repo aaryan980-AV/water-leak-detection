@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <!-- Drop shadow filter -->
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.35)"/>
+    </filter>
+  </defs>
+
+  <!-- Outer white ring -->
+  <circle cx="40" cy="40" r="38" fill="#ffffff" filter="url(#shadow)"/>
+  <!-- Orange background circle -->
+  <circle cx="40" cy="40" r="34" fill="#f97316"/>
+  <!-- Inner ring detail -->
+  <circle cx="40" cy="40" r="34" fill="none" stroke="#fb923c" stroke-width="3"/>
+
+  <!-- Hard Hat (white) -->
+  <!-- Hat dome -->
+  <path d="M40 16 C28 16 22 24 22 32 L58 32 C58 24 52 16 40 16Z" fill="white"/>
+  <!-- Hat brim -->
+  <rect x="17" y="31" width="46" height="6" rx="3" fill="white"/>
+  <!-- Hat band -->
+  <rect x="22" y="28" width="36" height="4" rx="2" fill="#fed7aa"/>
+  <!-- Hat vent line -->
+  <line x1="40" y1="18" x2="40" y2="30" stroke="#fed7aa" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Wrench (white) below hat -->
+  <g transform="translate(40,54) rotate(45)">
+    <!-- Wrench handle -->
+    <rect x="-3" y="-14" width="6" height="20" rx="3" fill="white"/>
+    <!-- Wrench head box -->
+    <rect x="-8" y="-18" width="16" height="10" rx="3" fill="white"/>
+    <!-- Inner cutout -->
+    <rect x="-4" y="-17" width="8" height="8" rx="2" fill="#f97316"/>
+  </g>
+
+  <!-- Label text -->
+  <rect x="8" y="62" width="64" height="14" rx="7" fill="#1e3a5f"/>
+  <text x="40" y="72.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="white" letter-spacing="0.5">MAINTENANCE</text>
+</svg>
