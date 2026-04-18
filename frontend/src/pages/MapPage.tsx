@@ -110,7 +110,7 @@ export default function MapPage() {
               <div>
                 <p className="font-bold text-red-300 text-lg">🚨 Leak Detected!</p>
                 <p className="text-orange-200/80 text-sm mt-0.5">
-                  GPS: {status.active_leak_gps!.lat.toFixed(4)}, {status.active_leak_gps!.lon.toFixed(4)}
+                  GPS: {status.active_leak_gps?.lat?.toFixed(4)}, {status.active_leak_gps?.lon?.toFixed(4)}
                   {assignedTeam && (
                     <span className="ml-3 text-white font-medium">
                       → Nearest crew: <span className="text-orange-300">{assignedTeam.name}</span>

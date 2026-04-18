@@ -215,7 +215,7 @@ export function SystemMap({
   }, [nearestTeam, status.active_leak_gps])
 
   const leak = status.active_leak_gps
-  const isLeak = status.overall === 'Leak' && leak
+  const isLeak = status.overall === 'Leak' && leak && typeof leak.lat === 'number' && typeof leak.lon === 'number'
 
   /** Nearest sensor to the active leak → red / leak state */
   const nearestSensorIdToLeak = useMemo(() => {

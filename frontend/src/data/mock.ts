@@ -3,9 +3,9 @@ import { BASE_LAT, BASE_LON } from '../config/region'
 
 // ─── Live status (starts "No Leak", toggled by Dashboard simulate buttons) ───
 export const mockStatus: StatusResponse = {
-  overall: 'No Leak',
-  active_leak_gps: null,
-  nearest_team_id: null,
+  overall: 'Leak',
+  active_leak_gps: { lat: 19.0805, lon: 72.8808 },
+  nearest_team_id: 'RT-114',
   updated_at: new Date().toISOString(),
 }
 

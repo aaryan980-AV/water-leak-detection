@@ -219,8 +219,16 @@ export default function DatasetPage() {
                 <span className="font-mono bg-white/10 px-2 py-0.5 rounded">cnn-v3.2</span>
               </div>
               <div className="flex justify-between items-center text-sm text-left">
+                <span className="text-slate-500">RF Model Accuracy</span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">99.00%</span>
+              </div>
+              <div className="flex justify-between items-center text-sm text-left">
+                <span className="text-slate-500">CNN Accuracy</span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">97.00%</span>
+              </div>
+              <div className="flex justify-between items-center text-sm text-left">
                 <span className="text-slate-500">Last Augmented</span>
-                <span className="font-medium">2 hours ago</span>
+                <span className="font-medium">Just now</span>
               </div>
               <div className="flex justify-between items-center text-sm text-left">
                 <span className="text-slate-500">Total Samples</span>

@@ -79,7 +79,7 @@ export async function getEvents(): Promise<FeedItem[]> {
       time: item.timestamp,
       prediction: item.result,
       confidence: item.confidence,
-      endpoint: `Lat: ${item.lat.toFixed(4)}, Lon: ${item.lon.toFixed(4)}`,
+      endpoint: `Lat: ${item.location_gps?.lat?.toFixed(4) ?? 0}, Lon: ${item.location_gps?.lon?.toFixed(4) ?? 0}`,
       sensor_id: item.id
     }))
   } catch {

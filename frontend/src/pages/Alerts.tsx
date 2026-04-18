@@ -180,7 +180,7 @@ export default function AlertsPage() {
                       <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                         Routed to team <span className="text-orange-700 dark:text-orange-200 font-mono">{a.assigned_team_id}</span>
                         {' · '}
-                        GPS ({a.assigned_team_gps.lat.toFixed(4)}, {a.assigned_team_gps.lon.toFixed(4)})
+                        GPS ({a.assigned_team_gps?.lat?.toFixed(4)}, {a.assigned_team_gps?.lon?.toFixed(4)})
                       </p>
                       {a.leak_gps && (
                         <p className="text-xs text-red-700 dark:text-red-300/90 mt-1">

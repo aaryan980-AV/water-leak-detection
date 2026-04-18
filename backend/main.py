@@ -195,8 +195,9 @@ state = {
         {"time": datetime.now(timezone.utc).isoformat(), "sensor_id": "sens101", "endpoint": "System Initialized", "prediction": "Normal", "confidence": 0.99}
     ],
     "history": [
-        {"id": "LK-901", "date": "2026-04-10", "location": "Dadar West", "severity": "Medium", "resolved": True},
-        {"id": "LK-902", "date": "2026-04-11", "location": "Andheri Road", "severity": "High", "resolved": True},
+        {"id": "LK-901", "timestamp": "2026-04-10T10:00:00Z", "result": "Leak", "confidence": 0.88, "location_gps": {"lat": 19.0760, "lon": 72.8777}},
+        {"id": "LK-902", "timestamp": "2026-04-11T14:30:00Z", "result": "Leak", "confidence": 0.92, "location_gps": {"lat": 19.0860, "lon": 72.8877}},
+        {"id": "LK-903", "timestamp": "2026-04-12T09:15:00Z", "result": "No Leak", "confidence": 0.98, "location_gps": {"lat": 19.0660, "lon": 72.8677}},
     ]
 }
 
@@ -259,13 +260,41 @@ def get_history():
 @app.get("/alerts")
 def get_alerts():
     # Dynamic alerts based on state
-    alerts = []
-    if state["overall"] == "Leak":
-        alerts.append({
-            "id": str(uuid.uuid4())[:8],
+    alerts = [
+        {
+            "id": "ALT-1092",
+            "type": "SMS",
+            "status": "delivered",
+            "severity": "high",
+            "message": "Potential leak detected near Bandra Railway Feeder",
+            "time": (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
+            "assigned_team_id": "Hydrotech Field Alpha",
+            "assigned_team_gps": {"lat": 19.0600, "lon": 72.8600},
+            "leak_gps": {"lat": 19.0650, "lon": 72.8680}
+        },
+        {
+            "id": "ALT-1093",
+            "type": "Email",
+            "status": "delivered",
             "severity": "critical",
-            "message": f"Active leak detected at {state['active_leak_gps']}",
-            "time": datetime.now(timezone.utc).isoformat()
+            "message": "Major pressure drop detected in Andheri East Junction",
+            "time": (datetime.now(timezone.utc) - timedelta(hours=5)).isoformat(),
+            "assigned_team_id": "Mumbai Rapid Response",
+            "assigned_team_gps": {"lat": 19.0800, "lon": 72.8800},
+            "leak_gps": {"lat": 19.0850, "lon": 72.8720}
+        }
+    ]
+    if state["overall"] == "Leak":
+        alerts.insert(0, {
+            "id": str(uuid.uuid4())[:8],
+            "type": "System",
+            "status": "pending",
+            "severity": "critical",
+            "message": f"Active leak detected at Lat {state['active_leak_gps']['lat']:.4f}, Lon {state['active_leak_gps']['lon']:.4f}",
+            "time": datetime.now(timezone.utc).isoformat(),
+            "assigned_team_id": state.get("assigned_team") or "Unassigned",
+            "assigned_team_gps": {"lat": BASE_LAT, "lon": BASE_LON},
+            "leak_gps": {"lat": state['active_leak_gps']['lat'], "lon": state['active_leak_gps']['lon']}
         })
     return {"items": alerts}
 
@@ -290,7 +319,7 @@ def simulate_leak(lat: Optional[float] = None, lon: Optional[float] = None):
         lat, lon = target["lat"], target["lon"]
     
     state["overall"] = "Leak"
-    state["active_leak_gps"] = [lat, lon]
+    state["active_leak_gps"] = {"lat": lat, "lon": lon}
     
     # Auto-assign nearest team
     team, dist = get_nearest_team(lat, lon)
@@ -461,4 +490,4 @@ if __name__ == "__main__":
     import uvicorn
     # Pre-load models before starting server
     load_models()
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
