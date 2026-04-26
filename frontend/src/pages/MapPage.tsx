@@ -79,7 +79,7 @@ export default function MapPage() {
     )
   }
 
-  const isLeak = status.overall === 'Leak' && status.active_leak_gps
+  // isLeak already defined above
   const assignedTeam = status.nearest_team_id
     ? locations.teams.find((t) => t.id === status.nearest_team_id)
     : undefined

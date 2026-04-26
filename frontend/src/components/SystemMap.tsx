@@ -102,10 +102,10 @@ type SensorState = 'normal' | 'leak' | 'degraded' | 'cleared'
 
 function sensorIcon(sensor: SensorLoc, state: SensorState) {
   const cfg = {
-    normal:   { pin: '#1d4ed8', ring: '#eff6ff', text: '#1d4ed8', badge: '● ONLINE',   anim: '' },
-    degraded: { pin: '#d97706', ring: '#fffbeb', text: '#b45309', badge: '⚠ DEGRADE', anim: '' },
+    normal:   { pin: '#16a34a', ring: '#f0fdf4', text: '#15803d', badge: '● ONLINE',   anim: '' },
+    degraded: { pin: '#16a34a', ring: '#f0fdf4', text: '#15803d', badge: '⚠ SIGNAL',   anim: '' },
     leak:     { pin: '#dc2626', ring: '#fef2f2', text: '#dc2626', badge: '🔴 LEAK',    anim: 'sensor-leak-bounce' },
-    cleared:  { pin: '#16a34a', ring: '#f0fdf4', text: '#15803d', badge: '✅ CLEARED', anim: 'sensor-cleared-glow' },
+    cleared:  { pin: '#16a34a', ring: '#f0fdf4', text: '#15803d', badge: '✅ RESOLVED', anim: 'sensor-cleared-glow' },
   }[state]
 
   const html = `
@@ -259,7 +259,7 @@ export function SystemMap({
         {routeLine && (
           <Polyline
             positions={routeLine}
-            pathOptions={{ color: '#ea580c', weight: 4, dashArray: '10 12', opacity: 0.95 }}
+            pathOptions={{ color: '#dc2626', weight: 4, dashArray: '10 12', opacity: 0.95 }}
           />
         )}
 
@@ -294,15 +294,14 @@ export function SystemMap({
                   <div style={{ minWidth: 180 }}>
                     <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:6 }}>
                       <span style={{ width:11, height:11, borderRadius:'50%', display:'inline-block',
-                        background: isLeakSensor ? '#dc2626' : isCleared ? '#16a34a' : s.status === 'degraded' ? '#d97706' : '#1d4ed8' }} />
-                      <strong style={{ color: isLeakSensor ? '#dc2626' : isCleared ? '#15803d' : '#1d4ed8', fontSize:13 }}>{s.id}</strong>
+                        background: isLeakSensor ? '#dc2626' : '#16a34a' }} />
+                      <strong style={{ color: isLeakSensor ? '#dc2626' : '#15803d', fontSize:13 }}>{s.id}</strong>
                     </div>
                     <p style={{ margin:'2px 0', fontSize:12, color:'#475569' }}>{s.name}</p>
                     <p style={{ margin:'4px 0 2px', fontSize:11, fontWeight:700,
-                      color: isLeakSensor ? '#dc2626' : isCleared ? '#15803d' : s.status === 'degraded' ? '#d97706' : '#16a34a' }}>
-                      {isLeakSensor  ? '🔴 Leak Detected — nearest sensor!' :
-                       isCleared     ? '✅ Cleared & Repaired' :
-                       s.status === 'degraded' ? '⚠ Signal Degraded' :
+                      color: isLeakSensor ? '#dc2626' : '#16a34a' }}>
+                      {isLeakSensor  ? '🔴 Leak Detected — active alert!' :
+                       isCleared     ? '✅ Issue Resolved' :
                        '✅ Normal — no leak'}
                     </p>
                     <p style={{ margin:0, fontSize:10, color:'#94a3b8' }}>{s.last_update}</p>
@@ -378,10 +377,10 @@ export function SystemMap({
             >
               <Popup>
                 <div style={{ minWidth: 180 }}>
-                  <p style={{ margin:'0 0 4px', fontWeight:700, color:'#ea580c' }}>👷 {t.name}</p>
+                  <p style={{ margin:'0 0 4px', fontWeight:700, color:'#1d4ed8' }}>👷 {t.name}</p>
                   {isNearest && <p style={{ margin:'0 0 4px', fontSize:11, fontWeight:700, color:'#dc2626' }}>🚨 Assigned to active incident</p>}
                   <p style={{ margin:0, fontSize:11,
-                    color: t.availability === 'available' ? '#16a34a' : '#d97706',
+                    color: t.availability === 'available' ? '#16a34a' : '#64748b',
                     fontWeight: 600 }}>
                     {t.availability === 'available' ? '✅ Available' : '⏳ Busy'}
                   </p>
@@ -402,7 +401,7 @@ export function SystemMap({
                     GPS: {leak.lat.toFixed(4)}, {leak.lon.toFixed(4)}
                   </p>
                   {nearestTeam && (
-                    <p style={{ margin:0, fontSize:11, color:'#ea580c', fontWeight:600 }}>
+                    <p style={{ margin:0, fontSize:11, color:'#dc2626', fontWeight:600 }}>
                       🔧 Routed to: {nearestTeam.name}
                     </p>
                   )}
@@ -429,20 +428,14 @@ export function SystemMap({
 
           {/* Normal sensor */}
           <div className="flex items-center gap-2.5">
-            <svg width="20" height="25" viewBox="0 0 40 52"><path d="M20 2 C10 2 3 10 3 20 C3 33 20 50 20 50 S37 33 37 20 C37 10 30 2 20 2Z" fill="#1d4ed8" stroke="white" strokeWidth="3"/><circle cx="20" cy="20" r="8" fill="white"/><circle cx="20" cy="20" r="3.5" fill="#1d4ed8"/></svg>
-            <div><p className="text-[11px] font-bold text-blue-700">Acoustic Sensor</p><p className="text-[9px] text-slate-500">Normal — no leak</p></div>
+            <svg width="20" height="25" viewBox="0 0 40 52"><path d="M20 2 C10 2 3 10 3 20 C3 33 20 50 20 50 S37 33 37 20 C37 10 30 2 20 2Z" fill="#16a34a" stroke="white" strokeWidth="3"/><circle cx="20" cy="20" r="8" fill="white"/><circle cx="20" cy="20" r="3.5" fill="#16a34a"/></svg>
+            <div><p className="text-[11px] font-bold text-emerald-700">Acoustic Sensor</p><p className="text-[9px] text-slate-500">Normal / Resolved — no leak</p></div>
           </div>
 
           {/* Leak sensor */}
           <div className="flex items-center gap-2.5">
             <svg width="20" height="25" viewBox="0 0 40 52"><path d="M20 2 C10 2 3 10 3 20 C3 33 20 50 20 50 S37 33 37 20 C37 10 30 2 20 2Z" fill="#dc2626" stroke="white" strokeWidth="3"/><circle cx="20" cy="20" r="8" fill="white"/><circle cx="20" cy="20" r="3.5" fill="#dc2626"/></svg>
             <div><p className="text-[11px] font-bold text-red-700">Sensor (Leak 🔴)</p><p className="text-[9px] text-red-500">Pulsing alert circle</p></div>
-          </div>
-
-          {/* Cleared sensor */}
-          <div className="flex items-center gap-2.5">
-            <svg width="20" height="25" viewBox="0 0 40 52"><path d="M20 2 C10 2 3 10 3 20 C3 33 20 50 20 50 S37 33 37 20 C37 10 30 2 20 2Z" fill="#16a34a" stroke="white" strokeWidth="3"/><circle cx="20" cy="20" r="8" fill="white"/><circle cx="20" cy="20" r="3.5" fill="#16a34a"/></svg>
-            <div><p className="text-[11px] font-bold text-emerald-700">Sensor (✅ Cleared)</p><p className="text-[9px] text-emerald-600">Repaired &amp; resolved</p></div>
           </div>
 
           <div className="border-t border-slate-100 my-1" />

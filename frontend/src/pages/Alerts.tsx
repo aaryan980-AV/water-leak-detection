@@ -252,15 +252,7 @@ export default function AlertsPage() {
                       className="flex items-center gap-1.5 rounded-xl border border-emerald-300/60 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition"
                     >
                       <CheckCircle className="w-3.5 h-3.5" />
-                      Clear Leak
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => clearAlert(a.id)}
-                      className="flex items-center gap-1.5 rounded-xl border border-slate-300/60 bg-slate-500/10 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-500/20 transition"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                      Dismiss Alert
+                      Dismiss
                     </button>
                   </div>
                 </motion.article>
