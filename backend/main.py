@@ -11,6 +11,11 @@ import csv
 import json
 from datetime import datetime, timezone, timedelta
 from typing import Any, List, Optional
+import io
+import base64
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -97,17 +102,16 @@ MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
 rf_model = None
 scaler = None
 cnn_model = None
-acoustic_cnn_model = None
+cnn_spectrogram_model = None
 
 def load_models():
-    global rf_model, scaler, cnn_model, acoustic_cnn_model
+    global rf_model, scaler, cnn_model, cnn_spectrogram_model
     try:
         os.makedirs(MODELS_DIR, exist_ok=True)
         scaler_path = os.path.join(MODELS_DIR, "scaler.joblib")
         rf_path = os.path.join(MODELS_DIR, "ml_model.joblib")
         cnn_path = os.path.join(MODELS_DIR, "cnn_model.keras")
-        acoustic_cnn_path = os.path.join(MODELS_DIR, "acoustic_cnn_model.keras")
-        
+
         if os.path.exists(scaler_path):
             scaler = joblib.load(scaler_path)
             print(f"Loaded scaler from {scaler_path}")
@@ -117,9 +121,12 @@ def load_models():
         if HAS_TF and os.path.exists(cnn_path):
             cnn_model = tf.keras.models.load_model(cnn_path)
             print(f"Loaded 1D-CNN model from {cnn_path}")
-        if HAS_TF and os.path.exists(acoustic_cnn_path):
-            acoustic_cnn_model = tf.keras.models.load_model(acoustic_cnn_path)
-            print(f"Loaded Acoustic 2D-CNN model from {acoustic_cnn_path}")
+            
+        spectrogram_path = os.path.join(MODELS_DIR, "cnn_spectrogram_model.keras")
+        if HAS_TF and os.path.exists(spectrogram_path):
+            cnn_spectrogram_model = tf.keras.models.load_model(spectrogram_path)
+            print(f"Loaded Spectrogram CNN model from {spectrogram_path}")
+
     except Exception as e:
         print(f"Error loading models: {e}")
 
@@ -127,19 +134,30 @@ def load_models():
 async def startup_event():
     load_models()
 
-# ---------------- ACOUSTIC HELPERS ----------------
-def extract_acoustic_features(audio_bytes: bytes):
-    """Convert raw wav bytes into a Mel-spectrogram for the CNN."""
+# ---------------- SPECTROGRAM HELPERS ----------------
+def generate_spectrogram(audio_bytes: bytes):
     import librosa
-    import io
     audio, _ = librosa.load(io.BytesIO(audio_bytes), sr=8000, duration=1.0)
     if len(audio) < 8000:
         audio = np.pad(audio, (0, 8000 - len(audio)))
+    
     mel_spec = librosa.feature.melspectrogram(y=audio, sr=8000, n_mels=64, hop_length=512)
     mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
-    # Normalize to [0, 1] as per training script
-    feat = (mel_spec_db - (-80.0)) / (80.0) # Simple normalization
-    return feat.reshape(1, 64, 16, 1)
+    
+    # Generate image
+    fig, ax = plt.subplots(figsize=(4, 2))
+    librosa.display.specshow(mel_spec_db, sr=8000, x_axis='time', y_axis='mel', ax=ax, cmap='magma')
+    ax.axis('off')
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
+    plt.close(fig)
+    b64_img = base64.b64encode(buf.getvalue()).decode('utf-8')
+    
+    # Generate CNN input shape: (1, 64, 16, 1)
+    feat = (mel_spec_db - (-80.0)) / (80.0)
+    feat_input = feat.reshape(1, 64, 16, 1)
+    
+    return feat_input, b64_img
 
 # ---------------- AUTH ENDPOINTS ----------------
 
@@ -408,25 +426,27 @@ def predict_leak(body: PredictBody):
     except Exception as e:
         return {"error": str(e)}
 
-@app.post("/predict-acoustic")
-async def predict_acoustic(file: UploadFile = File(...)):
-    global acoustic_cnn_model
-    if acoustic_cnn_model is None or not HAS_TF:
-        return {"error": "Acoustic CNN model not loaded"}
+@app.post("/predict-spectrogram")
+async def predict_spectrogram(file: UploadFile = File(...)):
+    global cnn_spectrogram_model
+    if cnn_spectrogram_model is None or not HAS_TF:
+        return {"error": "Spectrogram CNN model not loaded"}
     
     try:
         content = await file.read()
-        features = extract_acoustic_features(content)
-        prob = float(acoustic_cnn_model.predict(features, verbose=0)[0][0])
+        features, b64_img = generate_spectrogram(content)
         
-        is_leak = prob > 0.5
-        confidence = prob if is_leak else (1 - prob)
+        # Predict using CNN: [No Leak (0), Leak (1)]
+        prob_leak = float(cnn_spectrogram_model.predict(features, verbose=0)[0][1])
+        
+        is_leak = prob_leak > 0.5
+        confidence = prob_leak if is_leak else (1 - prob_leak)
         
         # Log event
         state["events"].append({
             "time": datetime.now(timezone.utc).isoformat(),
-            "sensor_id": "AUDIO-NODE",
-            "endpoint": "/predict-acoustic",
+            "sensor_id": "SPECTRO-NODE",
+            "endpoint": "/predict-spectrogram",
             "prediction": "Leak" if is_leak else "Normal",
             "confidence": round(confidence, 4)
         })
@@ -434,7 +454,8 @@ async def predict_acoustic(file: UploadFile = File(...)):
         return {
             "is_leak": bool(is_leak),
             "confidence": round(confidence, 4),
-            "filename": file.filename
+            "filename": file.filename,
+            "spectrogram_b64": b64_img
         }
     except Exception as e:
         return {"error": str(e)}

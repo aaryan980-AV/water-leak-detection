@@ -119,3 +119,14 @@ export async function getDataset(): Promise<any[]> {
     return []
   }
 }
+
+export async function postPredictAcoustic(file: File): Promise<any> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await http.post('/predict-acoustic', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+  return data
+}

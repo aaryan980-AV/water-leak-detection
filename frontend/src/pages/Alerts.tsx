@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, CheckCircle, Mail, MessageSquare, Smartphone, Wrench, X, AlertTriangle, Clock } from 'lucide-react'
 import type { AlertRecord } from '../types'
-import { getAlerts } from '../api/client'
+import { getAlerts, postClearLeak } from '../api/client'
 
 const OPS_KEY = 'aquasense_alert_ops'
 const DISMISSED_KEY = 'aquasense_alert_dismissed'
@@ -94,6 +94,15 @@ export default function AlertsPage() {
       return next
     })
   }, [setOp])
+
+  const handleClearLeak = useCallback(async (id: string) => {
+    setOp(id, 'leak_cleared')
+    try { await postClearLeak() } catch {}
+    // Auto dismiss after a short delay so user sees the status change
+    setTimeout(() => {
+      clearAlert(id)
+    }, 1500)
+  }, [setOp, clearAlert])
 
   useEffect(() => {
     let cancel = false
@@ -235,15 +244,23 @@ export default function AlertsPage() {
                     </button>
                   </div>
 
-                  {/* Clear Leak button — removes alert from view */}
-                  <div className="pt-1 flex justify-end">
+                  {/* Clear Leak & Dismiss buttons */}
+                  <div className="pt-1 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleClearLeak(a.id)}
+                      className="flex items-center gap-1.5 rounded-xl border border-emerald-300/60 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition"
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Clear Leak
+                    </button>
                     <button
                       type="button"
                       onClick={() => clearAlert(a.id)}
-                      className="flex items-center gap-1.5 rounded-xl border border-red-300/60 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-700 dark:text-red-300 hover:bg-red-500/20 transition"
+                      className="flex items-center gap-1.5 rounded-xl border border-slate-300/60 bg-slate-500/10 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-500/20 transition"
                     >
                       <X className="w-3.5 h-3.5" />
-                      Clear leak &amp; dismiss alert
+                      Dismiss Alert
                     </button>
                   </div>
                 </motion.article>

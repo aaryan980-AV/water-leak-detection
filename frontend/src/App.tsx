@@ -12,6 +12,7 @@ import LoginPage from './pages/Login'
 import SignupPage from './pages/Signup'
 import DatasetPage from './pages/DatasetPage'
 
+
 export default function App() {
   return (
     <ThemeProvider>
@@ -63,6 +64,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Activity, AlertTriangle, CheckCircle, Filter, Layers,
@@ -11,7 +11,6 @@ import { getLocations, getStatus, postClearLeak } from '../api/client'
 import { BASE_LAT, BASE_LON } from '../config/region'
 
 const FILTER_LABELS: { key: keyof MapFilters; label: string; color: string }[] = [
-  { key: 'pipelines', label: 'Pipeline grid',     color: 'text-cyan-600 dark:text-cyan-400' },
   { key: 'sensors',   label: 'Acoustic sensors',  color: 'text-blue-600 dark:text-blue-400' },
   { key: 'water',     label: 'Water supply',       color: 'text-sky-600 dark:text-sky-400' },
   { key: 'teams',     label: 'Maintenance teams',  color: 'text-orange-600 dark:text-orange-400' },
@@ -21,10 +20,11 @@ const FILTER_LABELS: { key: keyof MapFilters; label: string; color: string }[] =
 export default function MapPage() {
   const [status, setStatus]     = useState<StatusResponse | null>(null)
   const [locations, setLocations] = useState<LocationsResponse | null>(null)
-  const [filters, setFilters]   = useState<MapFilters>({ sensors: true, water: true, teams: true, pipelines: true })
+  const [filters, setFilters]   = useState<MapFilters>({ sensors: true, water: true, teams: true, pipelines: false })
   const [detail, setDetail]     = useState<{ title: string; body: string } | null>(null)
   const [lastRefresh, setLastRefresh] = useState(Date.now())
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>(undefined)
+  const [clearedSensorIds, setClearedSensorIds] = useState<string[]>([])
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const load = useCallback(async () => {
@@ -41,7 +41,31 @@ export default function MapPage() {
   }, [load])
 
 
+  const isLeak = status?.overall === 'Leak' && status?.active_leak_gps
+  const nearestSensorIdToLeak = useMemo(() => {
+    if (!isLeak || !status?.active_leak_gps || !locations) return null
+    let best: string | null = null, bestD = Infinity
+    for (const s of locations.sensors) {
+      // rough distance calculation for state tracking
+      const d = Math.hypot(s.lat - status.active_leak_gps.lat, s.lon - status.active_leak_gps.lon)
+      if (d < bestD) { bestD = d; best = s.id }
+    }
+    return best
+  }, [isLeak, status?.active_leak_gps, locations])
+
+  // Watch for leak clearance from other tabs/pages (polling)
+  const prevIsLeak = useRef(isLeak)
+  useEffect(() => {
+    if (prevIsLeak.current && !isLeak && nearestSensorIdToLeak) {
+      setClearedSensorIds(prev => Array.from(new Set([...prev, nearestSensorIdToLeak])))
+    }
+    prevIsLeak.current = isLeak
+  }, [isLeak, nearestSensorIdToLeak])
+
   const handleClear = async () => {
+    if (nearestSensorIdToLeak) {
+      setClearedSensorIds(prev => Array.from(new Set([...prev, nearestSensorIdToLeak])))
+    }
     try { await postClearLeak() } catch { /* ignore */ }
     await load()
   }
@@ -173,29 +197,7 @@ export default function MapPage() {
 
         {/* Sidebar */}
         <aside className="space-y-4 h-fit">
-          {/* Layer filters */}
-          <div className="rounded-2xl glass border border-slate-200/80 dark:border-white/10 p-5 space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 dark:text-white font-semibold">
-              <Filter className="w-4 h-4 text-cyan-400" />
-              Layer Filters
-            </div>
-            <div className="space-y-3">
-              {FILTER_LABELS.map(({ key, label, color }) => (
-                <label key={key} className="flex items-center gap-3 cursor-pointer group">
-                  <div className={`relative w-10 h-5 rounded-full transition-colors ${filters[key] ? 'bg-cyan-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
-                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${filters[key] ? 'translate-x-5' : ''}`} />
-                    <input
-                      type="checkbox"
-                      checked={filters[key]}
-                      onChange={() => setFilters((f) => ({ ...f, [key]: !f[key] }))}
-                      className="sr-only"
-                    />
-                  </div>
-                  <span className={`text-sm font-medium ${filters[key] ? color : 'text-slate-500'}`}>{label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+
 
 
           {/* Marker guide */}
@@ -218,18 +220,7 @@ export default function MapPage() {
             ))}
           </div>
 
-          {/* Pipeline indicator */}
-          <div className="rounded-2xl glass border border-slate-200/80 dark:border-white/10 p-5">
-            <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">Pipeline Grid</p>
-            <div className="flex items-center gap-2">
-              <div className="h-0.5 w-8 rounded bg-cyan-500" />
-              <span className="text-xs text-cyan-600 dark:text-cyan-400">Normal flow</span>
-            </div>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="h-0.5 w-8 rounded bg-orange-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #ea580c 0, #ea580c 6px, transparent 6px, transparent 12px)' }} />
-              <span className="text-xs text-orange-600 dark:text-orange-400">Dispatch route</span>
-            </div>
-          </div>
+
         </aside>
 
         {/* Map */}
@@ -239,6 +230,7 @@ export default function MapPage() {
             status={status}
             filters={filters}
             center={mapCenter}
+            clearedSensorIds={clearedSensorIds}
             minHeight="min-h-[72vh] h-[72vh]"
             onSelect={(d) => setDetail({ title: d.title, body: d.body })}
           />

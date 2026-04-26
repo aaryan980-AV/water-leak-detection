@@ -24,6 +24,7 @@ const nav = [
   { to: '/alerts', label: 'Alerts', icon: Bell },
   { to: '/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/dataset', label: 'Dataset', icon: Database },
+
 ]
 
 export function Layout() {

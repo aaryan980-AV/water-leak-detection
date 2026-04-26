@@ -22,6 +22,7 @@ interface AuthContextValue {
   user: User | null
   token: string | null
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
+  googleLogin: () => Promise<{ ok: boolean; error?: string }>
   signup: (name: string, email: string, password: string, role?: string) => Promise<{ ok: boolean; error?: string }>
   logout: () => void
 }
@@ -84,9 +85,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const googleLogin = useCallback(async () => {
+    try {
+      // Mock Google OAuth flow since no Client ID was provided
+      // In production, you would use Firebase Auth or @react-oauth/google here
+      const demoEmail = 'google_demo@example.com'
+      const demoPass = 'google_secure_123'
+      
+      // Ensure user exists in backend
+      await signup('Google User', demoEmail, demoPass, 'supervisor')
+      
+      // Log them in
+      return await login(demoEmail, demoPass)
+    } catch (err) {
+      return { ok: false, error: 'Google Login failed' }
+    }
+  }, [login, signup])
+
   const value = useMemo(
-    () => ({ user, token, login, signup, logout }),
-    [user, token, login, signup, logout],
+    () => ({ user, token, login, googleLogin, signup, logout }),
+    [user, token, login, googleLogin, signup, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
