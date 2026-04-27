@@ -8,7 +8,6 @@ import {
   Home,
   Map as MapIcon,
   Radar,
-  Database,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
@@ -23,8 +22,6 @@ const nav = [
   { to: '/map', label: 'Smart Map', icon: MapIcon },
   { to: '/alerts', label: 'Alerts', icon: Bell },
   { to: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { to: '/dataset', label: 'Dataset', icon: Database },
-
 ]
 
 export function Layout() {

@@ -71,6 +71,10 @@ SENSORS = [
     {"id":"sens114","name":"Chembur Field Sensor","lat":BASE_LAT-0.016,"lon":BASE_LON+0.014,"status":"online","last_update":"2026-04-12T10:21:35Z"},
 ]
 
+for s in SENSORS:
+    s["leak_status"] = 0
+    s["dismissed"] = False
+
 WATER_SOURCES = [
     {"id":"wtr-01","name":"Tansa Lake Reservoir Intake","type":"reservoir","lat":BASE_LAT+0.006,"lon":BASE_LON+0.004},
     {"id":"wtr-02","name":"Vaitarna Water Supply Tap","type":"canal_tap","lat":BASE_LAT-0.004,"lon":BASE_LON+0.016},
@@ -277,43 +281,21 @@ def get_history():
 
 @app.get("/alerts")
 def get_alerts():
-    # Dynamic alerts based on state
-    alerts = [
-        {
-            "id": "ALT-1092",
-            "type": "SMS",
-            "status": "delivered",
-            "severity": "high",
-            "message": "Potential leak detected near Bandra Railway Feeder",
-            "time": (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
-            "assigned_team_id": "Hydrotech Field Alpha",
-            "assigned_team_gps": {"lat": 19.0600, "lon": 72.8600},
-            "leak_gps": {"lat": 19.0650, "lon": 72.8680}
-        },
-        {
-            "id": "ALT-1093",
-            "type": "Email",
-            "status": "delivered",
-            "severity": "critical",
-            "message": "Major pressure drop detected in Andheri East Junction",
-            "time": (datetime.now(timezone.utc) - timedelta(hours=5)).isoformat(),
-            "assigned_team_id": "Mumbai Rapid Response",
-            "assigned_team_gps": {"lat": 19.0800, "lon": 72.8800},
-            "leak_gps": {"lat": 19.0850, "lon": 72.8720}
-        }
-    ]
-    if state["overall"] == "Leak":
-        alerts.insert(0, {
-            "id": str(uuid.uuid4())[:8],
-            "type": "System",
-            "status": "pending",
-            "severity": "critical",
-            "message": f"Active leak detected at Lat {state['active_leak_gps']['lat']:.4f}, Lon {state['active_leak_gps']['lon']:.4f}",
-            "time": datetime.now(timezone.utc).isoformat(),
-            "assigned_team_id": state.get("assigned_team") or "Unassigned",
-            "assigned_team_gps": {"lat": BASE_LAT, "lon": BASE_LON},
-            "leak_gps": {"lat": state['active_leak_gps']['lat'], "lon": state['active_leak_gps']['lon']}
-        })
+    # Dynamic alerts based on active leaks
+    alerts = []
+    for s in SENSORS:
+        if s.get("leak_status") == 1:
+            alerts.append({
+                "id": f"ALT-{s['id']}",
+                "type": "System",
+                "status": "pending",
+                "severity": "critical",
+                "message": f"Active leak detected at {s['name']}",
+                "time": datetime.now(timezone.utc).isoformat(),
+                "assigned_team_id": state.get("assigned_team") or "Unassigned",
+                "assigned_team_gps": {"lat": BASE_LAT, "lon": BASE_LON},
+                "leak_gps": {"lat": s['lat'], "lon": s['lon']}
+            })
     return {"items": alerts}
 
 @app.get("/events")
@@ -331,9 +313,15 @@ def get_pipeline_stats():
 
 @app.post("/simulate-leak")
 def simulate_leak(lat: Optional[float] = None, lon: Optional[float] = None):
-    # If no coords provided, pick a random sensor's location
     if lat is None or lon is None:
         target = random.choice(SENSORS)
+        lat, lon = target["lat"], target["lon"]
+        target["leak_status"] = 1
+        target["dismissed"] = False
+    else:
+        target = min(SENSORS, key=lambda s: haversine_km(lat, lon, s["lat"], s["lon"]))
+        target["leak_status"] = 1
+        target["dismissed"] = False
         lat, lon = target["lat"], target["lon"]
     
     state["overall"] = "Leak"
@@ -347,7 +335,7 @@ def simulate_leak(lat: Optional[float] = None, lon: Optional[float] = None):
     # Add to event feed
     state["events"].append({
         "time": datetime.now(timezone.utc).isoformat(),
-        "sensor_id": "SYS-SIM",
+        "sensor_id": target["id"],
         "endpoint": "Manual Trigger",
         "prediction": "Leak",
         "confidence": 1.0
@@ -361,6 +349,11 @@ def clear_leak():
     state["active_leak_gps"] = None
     state["assigned_team"] = None
     
+    for s in SENSORS:
+        if s["leak_status"] == 1:
+            s["leak_status"] = 0
+            s["dismissed"] = True
+            
     state["events"].append({
         "time": datetime.now(timezone.utc).isoformat(),
         "sensor_id": "SYS",
@@ -369,6 +362,28 @@ def clear_leak():
         "confidence": 1.0
     })
     return {"status": "Cleared"}
+
+@app.post("/dismiss-leak/{sensor_id}")
+def dismiss_leak(sensor_id: str):
+    for s in SENSORS:
+        if s["id"] == sensor_id:
+            s["leak_status"] = 0
+            s["dismissed"] = True
+            break
+            
+    if not any(s.get("leak_status") == 1 for s in SENSORS):
+        state["overall"] = "No Leak"
+        state["active_leak_gps"] = None
+        state["assigned_team"] = None
+        
+    state["events"].append({
+        "time": datetime.now(timezone.utc).isoformat(),
+        "sensor_id": sensor_id,
+        "endpoint": "Leak Dismissed",
+        "prediction": "Normal",
+        "confidence": 1.0
+    })
+    return {"status": "Dismissed"}
 
 @app.post("/predict")
 def predict_leak(body: PredictBody):

@@ -33,6 +33,8 @@ export interface SensorLoc {
   lon: number
   status: string
   last_update: string
+  leak_status?: number
+  dismissed?: boolean
 }
 
 export interface WaterSourceLoc {

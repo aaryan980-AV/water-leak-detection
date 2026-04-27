@@ -7,7 +7,7 @@ import {
 import { SystemMap } from '../components/SystemMap'
 import { GeospatialMapFrame } from '../components/GeospatialMapFrame'
 import type { LocationsResponse, MapFilters, StatusResponse } from '../types'
-import { getLocations, getStatus, postClearLeak } from '../api/client'
+import { getLocations, getStatus, postClearLeak, postSimulateLeak } from '../api/client'
 import { BASE_LAT, BASE_LON } from '../config/region'
 
 const FILTER_LABELS: { key: keyof MapFilters; label: string; color: string }[] = [
@@ -70,6 +70,11 @@ export default function MapPage() {
     await load()
   }
 
+  const handleSimulate = async () => {
+    try { await postSimulateLeak() } catch { /* ignore */ }
+    await load()
+  }
+
   if (!status || !locations) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] gap-3 text-slate-600 dark:text-slate-400">
@@ -84,8 +89,8 @@ export default function MapPage() {
     ? locations.teams.find((t) => t.id === status.nearest_team_id)
     : undefined
   const totalSensors = locations.sensors.length
-  const onlineSensors = locations.sensors.filter((s) => s.status === 'online').length
-  const degradedSensors = locations.sensors.filter((s) => s.status === 'degraded').length
+  const onlineSensors = locations.sensors.filter((s) => s.leak_status !== 1 && s.dismissed !== true).length
+  const resolvedSensors = locations.sensors.filter((s) => s.dismissed === true).length
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-5">
@@ -104,7 +109,16 @@ export default function MapPage() {
 
         {/* Header Action Row */}
         <div className="flex flex-wrap items-center gap-2">
-          {isLeak && (
+          {!isLeak ? (
+            <button
+              type="button"
+              onClick={handleSimulate}
+              className="flex items-center gap-2 rounded-xl border border-red-500/50 bg-red-500/15 px-4 py-2 text-sm font-semibold text-red-700 dark:text-red-300 hover:bg-red-500/25 transition"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              Simulate Leak
+            </button>
+          ) : (
             <button
               type="button"
               onClick={handleClear}
@@ -168,11 +182,11 @@ export default function MapPage() {
             bg: 'border-blue-500/20 bg-blue-500/5',
           },
           {
-            icon: Activity,
-            label: 'Degraded',
-            value: degradedSensors > 0 ? `${degradedSensors} nodes` : 'None',
-            color: degradedSensors > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500',
-            bg: 'border-amber-500/20 bg-amber-500/5',
+            icon: CheckCircle,
+            label: 'Resolved',
+            value: resolvedSensors > 0 ? `${resolvedSensors} nodes` : 'None',
+            color: resolvedSensors > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500',
+            bg: 'border-emerald-500/20 bg-emerald-500/5',
           },
           {
             icon: Zap,

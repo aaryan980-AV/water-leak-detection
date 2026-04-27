@@ -102,8 +102,8 @@ type SensorState = 'normal' | 'leak' | 'degraded' | 'cleared'
 
 function sensorIcon(sensor: SensorLoc, state: SensorState) {
   const cfg = {
-    normal:   { pin: '#16a34a', ring: '#f0fdf4', text: '#15803d', badge: '● ONLINE',   anim: '' },
-    degraded: { pin: '#16a34a', ring: '#f0fdf4', text: '#15803d', badge: '⚠ SIGNAL',   anim: '' },
+    normal:   { pin: '#1d4ed8', ring: '#eff6ff', text: '#1e40af', badge: '● ONLINE',   anim: '' },
+    degraded: { pin: '#1d4ed8', ring: '#eff6ff', text: '#1e40af', badge: '⚠ SIGNAL',   anim: '' },
     leak:     { pin: '#dc2626', ring: '#fef2f2', text: '#dc2626', badge: '🔴 LEAK',    anim: 'sensor-leak-bounce' },
     cleared:  { pin: '#16a34a', ring: '#f0fdf4', text: '#15803d', badge: '✅ RESOLVED', anim: 'sensor-cleared-glow' },
   }[state]
@@ -228,16 +228,14 @@ export function SystemMap({
     return best
   }, [isLeak, leak, locations.sensors])
 
-  /** Derive per-sensor state following LeakMap.jsx logic:
-   *  activeAlert (from logs within 60s) → 'leak'
-   *  recentlyResolved (from clearedSensorIds) → 'cleared'
-   *  degraded from data → 'degraded'
+  /** Derive per-sensor state:
+   *  leak_status === 1 → 'leak'
+   *  dismissed === true → 'cleared'
    *  otherwise → 'normal'
    */
   function getSensorState(s: SensorLoc): SensorState {
-    if (isLeak && nearestSensorIdToLeak === s.id) return 'leak'
-    if (clearedSensorIds.includes(s.id)) return 'cleared'
-    if (s.status === 'degraded') return 'degraded'
+    if (s.leak_status === 1) return 'leak'
+    if (s.dismissed) return 'cleared'
     return 'normal'
   }
 
@@ -299,10 +297,10 @@ export function SystemMap({
                     </div>
                     <p style={{ margin:'2px 0', fontSize:12, color:'#475569' }}>{s.name}</p>
                     <p style={{ margin:'4px 0 2px', fontSize:11, fontWeight:700,
-                      color: isLeakSensor ? '#dc2626' : '#16a34a' }}>
+                      color: isLeakSensor ? '#dc2626' : isCleared ? '#16a34a' : '#1d4ed8' }}>
                       {isLeakSensor  ? '🔴 Leak Detected — active alert!' :
                        isCleared     ? '✅ Issue Resolved' :
-                       '✅ Normal — no leak'}
+                       '🔵 Normal — no leak'}
                     </p>
                     <p style={{ margin:0, fontSize:10, color:'#94a3b8' }}>{s.last_update}</p>
                   </div>
@@ -428,8 +426,14 @@ export function SystemMap({
 
           {/* Normal sensor */}
           <div className="flex items-center gap-2.5">
+            <svg width="20" height="25" viewBox="0 0 40 52"><path d="M20 2 C10 2 3 10 3 20 C3 33 20 50 20 50 S37 33 37 20 C37 10 30 2 20 2Z" fill="#1d4ed8" stroke="white" strokeWidth="3"/><circle cx="20" cy="20" r="8" fill="white"/><circle cx="20" cy="20" r="3.5" fill="#1d4ed8"/></svg>
+            <div><p className="text-[11px] font-bold text-blue-700">Acoustic Sensor</p><p className="text-[9px] text-slate-500">Normal — no leak</p></div>
+          </div>
+
+          {/* Cleared sensor */}
+          <div className="flex items-center gap-2.5">
             <svg width="20" height="25" viewBox="0 0 40 52"><path d="M20 2 C10 2 3 10 3 20 C3 33 20 50 20 50 S37 33 37 20 C37 10 30 2 20 2Z" fill="#16a34a" stroke="white" strokeWidth="3"/><circle cx="20" cy="20" r="8" fill="white"/><circle cx="20" cy="20" r="3.5" fill="#16a34a"/></svg>
-            <div><p className="text-[11px] font-bold text-emerald-700">Acoustic Sensor</p><p className="text-[9px] text-slate-500">Normal / Resolved — no leak</p></div>
+            <div><p className="text-[11px] font-bold text-emerald-700">Resolved Sensor</p><p className="text-[9px] text-slate-500">Leak cleared (Green)</p></div>
           </div>
 
           {/* Leak sensor */}

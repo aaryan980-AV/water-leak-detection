@@ -111,6 +111,10 @@ export async function postClearLeak(): Promise<void> {
   await http.post('/clear-leak')
 }
 
+export async function postDismissLeak(sensorId: string): Promise<void> {
+  await http.post(`/dismiss-leak/${sensorId}`)
+}
+
 export async function getDataset(): Promise<any[]> {
   try {
     const { data } = await http.get<{ items: any[] }>('/dataset')
