@@ -84,7 +84,7 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            ProLeak Dashboard
+            Mumbai City Dashboard
           </h1>
           <p className="text-slate-600 dark:text-slate-400 mt-1">
             Real-time pipeline monitoring, leak detection, and sensor status overview.

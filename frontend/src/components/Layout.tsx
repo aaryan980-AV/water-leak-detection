@@ -42,11 +42,11 @@ export function Layout() {
         <div className="flex items-center justify-between gap-2 px-2">
           <div className="flex items-center gap-2 min-w-0">
             <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-lg overflow-hidden">
-              <img src={logo} alt="ProLeak Logo" className="w-full h-full object-contain p-1" />
+              <img src={logo} alt="Mumbai City Logo" className="w-full h-full object-contain p-1" />
             </div>
             <div>
               <p className="text-xs uppercase tracking-widest text-cyan-600 dark:text-cyan-400/80">AquaSense</p>
-              <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">ProLeak</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">Mumbai City</p>
             </div>
           </div>
           <ThemeToggle className="shrink-0 md:hidden" />
