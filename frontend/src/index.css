@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-void: #05080d;
+  --color-slate-950: #0a1018;
+  --color-cyan-glow: #22d3ee;
+  --color-cyan-dim: #0891b2;
+  --color-magenta-glow: #e879f9;
+  --color-danger: #f97316;
+  --color-danger-core: #ef4444;
+}
+
+@layer base {
+  html {
+    @apply antialiased scroll-smooth;
+  }
+  body {
+    @apply min-h-svh font-display bg-slate-100 text-slate-800 dark:bg-void dark:text-slate-200;
+    background-image:
+      radial-gradient(ellipse 120% 80% at 50% -20%, rgba(14, 165, 233, 0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 50%, rgba(99, 102, 241, 0.05), transparent);
+  }
+  html.dark body {
+    background-image:
+      radial-gradient(ellipse 120% 80% at 50% -20%, rgba(34, 211, 238, 0.12), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 50%, rgba(232, 121, 249, 0.06), transparent);
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-slate-200/90 shadow-sm dark:bg-white/[0.04] dark:border-white/10 dark:shadow-[0_0_40px_-12px_rgba(34,211,238,0.25)];
+  }
+  .glass-strong {
+    @apply bg-white/90 backdrop-blur-2xl border border-slate-200 shadow-md dark:bg-slate-950/80 dark:border-cyan-500/20 dark:shadow-none;
+  }
+  .text-glow-cyan {
+    text-shadow: 0 0 24px rgba(34, 211, 238, 0.45);
+  }
+  .text-glow-red {
+    text-shadow: 0 0 28px rgba(239, 68, 68, 0.55);
+  }
+  .animate-pulse-leak {
+    animation: pulse-leak 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse-leak {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 0 20px rgba(249, 115, 22, 0.5);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 0 14px rgba(239, 68, 68, 0), 0 0 40px rgba(249, 115, 22, 0.8);
+      transform: scale(1.08);
+    }
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .dark .grid-bg {
+    background-image:
+      linear-gradient(rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
+  }
+}
+
+.leaflet-container {
+  @apply rounded-2xl z-0 font-sans;
+}
+.leaflet-popup-content-wrapper {
+  @apply bg-white text-slate-900 border border-slate-200 rounded-xl shadow-xl dark:bg-slate-900/95 dark:text-slate-100 dark:border-cyan-500/30;
+}
+.leaflet-popup-tip {
+  @apply bg-white dark:bg-slate-900/95;
+}
+
+/* ── LeakMap: custom-div-icon base reset ───────────────────────────────── */
+.custom-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* ── LeakMap: pulsing alert circle on the map ──────────────────────────── */
+.pulse-circle {
+  animation: pulse-circle-ring 1.8s ease-in-out infinite;
+}
+@keyframes pulse-circle-ring {
+  0%   { stroke-opacity: 0.9; stroke-width: 3px; fill-opacity: 0.25; }
+  50%  { stroke-opacity: 0.3; stroke-width: 8px; fill-opacity: 0.08; }
+  100% { stroke-opacity: 0.9; stroke-width: 3px; fill-opacity: 0.25; }
+}
+
+/* ── Sensor pin bounce on leak ─────────────────────────────────────────── */
+.sensor-leak-bounce {
+  animation: sensor-bounce 0.9s ease-in-out infinite alternate;
+}
+@keyframes sensor-bounce {
+  from { transform: translateY(0px); }
+  to   { transform: translateY(-6px); }
+}
+
+/* ── Green cleared glow ────────────────────────────────────────────────── */
+@keyframes cleared-glow {
+  0%,100% { filter: drop-shadow(0 0 4px rgba(34,197,94,0.6)); }
+  50%     { filter: drop-shadow(0 0 12px rgba(34,197,94,1)); }
+}
+.sensor-cleared-glow {
+  animation: cleared-glow 2s ease-in-out infinite;
+}

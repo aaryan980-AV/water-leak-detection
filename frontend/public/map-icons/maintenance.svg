@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" width="56" height="56">
+  <defs>
+    <clipPath id="c"><circle cx="28" cy="28" r="26"/></clipPath>
+  </defs>
+  <circle cx="28" cy="28" r="26" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <g clip-path="url(#c)">
+    <!-- Orange hard hat (top half) -->
+    <path fill="#E87325" d="M28 6c-9.5 0-17 6.5-17 15v3h34v-3c0-8.5-7.5-15-17-15z"/>
+    <path fill="#E87325" d="M9 22h38v5H9z"/>
+    <path fill="#cc5f1a" d="M28 10v4" stroke="#cc5f1a" stroke-width="2" stroke-linecap="round"/>
+    <!-- White gap -->
+    <rect x="6" y="25" width="44" height="2" fill="#ffffff"/>
+    <!-- Blue gear (bottom half) -->
+    <path fill="#3D8BCC" d="M4 27h6v5H4zm8 0h5v5h-5zm9 0h5v5h-5zm9 0h5v5h-5zm9 0h5v5h-5zm9 0h6v5h-6z"/>
+    <path fill="#3D8BCC" d="M8 32h40v14H8z"/>
+    <ellipse cx="28" cy="39" rx="10" ry="6" fill="#2a6a99"/>
+  </g>
+</svg>

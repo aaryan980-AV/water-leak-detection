@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.35)"/>
+    </filter>
+  </defs>
+
+  <!-- Outer white ring -->
+  <circle cx="40" cy="40" r="38" fill="#ffffff" filter="url(#shadow)"/>
+  <!-- Blue background circle -->
+  <circle cx="40" cy="40" r="34" fill="#2563eb"/>
+  <!-- Inner ring detail -->
+  <circle cx="40" cy="40" r="34" fill="none" stroke="#3b82f6" stroke-width="3"/>
+
+  <!-- Water Tower (white) -->
+  <!-- Roof / triangle -->
+  <polygon points="40,10 58,22 22,22" fill="white"/>
+  <!-- Slight shadow on roof -->
+  <polygon points="40,12 57,22 40,22" fill="#bfdbfe" opacity="0.5"/>
+
+  <!-- Tank body -->
+  <rect x="22" y="22" width="36" height="22" rx="3" fill="white"/>
+  <!-- Blue water fill inside tank -->
+  <rect x="23" y="30" width="34" height="13" rx="2" fill="#bfdbfe"/>
+  <!-- Reflection highlight -->
+  <rect x="25" y="23" width="7" height="20" rx="2" fill="white" opacity="0.35"/>
+  <!-- Water drop in tank -->
+  <path d="M40 28 Q36 33 36 37 Q36 41 40 41 Q44 41 44 37 Q44 33 40 28Z" fill="#1d4ed8"/>
+
+  <!-- Platform bar -->
+  <rect x="18" y="44" width="44" height="5" rx="2.5" fill="#93c5fd" stroke="#ffffff" stroke-width="1"/>
+
+  <!-- Left leg group -->
+  <line x1="26" y1="49" x2="21" y2="62" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Right leg group -->
+  <line x1="54" y1="49" x2="59" y2="62" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Center-left leg -->
+  <line x1="34" y1="49" x2="30" y2="62" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Center-right leg -->
+  <line x1="46" y1="49" x2="50" y2="62" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Cross brace left -->
+  <line x1="22" y1="51" x2="33" y2="60" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <line x1="33" y1="51" x2="22" y2="60" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <!-- Cross brace right -->
+  <line x1="47" y1="51" x2="58" y2="60" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <line x1="58" y1="51" x2="47" y2="60" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Label text -->
+  <rect x="8" y="64" width="64" height="13" rx="6.5" fill="#1e3a5f"/>
+  <text x="40" y="73.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="white" letter-spacing="0.5">WATER SUPPLY</text>
+</svg>
