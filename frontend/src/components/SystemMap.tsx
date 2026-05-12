@@ -172,8 +172,6 @@ interface SystemMapProps {
   className?: string
   minHeight?: string
   onSelect?: (detail: { kind: string; title: string; body: string }) => void
-  /** IDs of sensors that have been recently cleared (green state) */
-  clearedSensorIds?: string[]
   /** Center the map on these coordinates when they change */
   center?: [number, number]
 }
@@ -196,7 +194,6 @@ export function SystemMap({
   className,
   minHeight = 'min-h-[380px]',
   onSelect,
-  clearedSensorIds = [],
   center,
 }: SystemMapProps) {
   const nearestTeam: TeamLoc | undefined = useMemo(() =>
@@ -217,16 +214,6 @@ export function SystemMap({
   const leak = status.active_leak_gps
   const isLeak = status.overall === 'Leak' && leak && typeof leak.lat === 'number' && typeof leak.lon === 'number'
 
-  /** Nearest sensor to the active leak → red / leak state */
-  const nearestSensorIdToLeak = useMemo(() => {
-    if (!isLeak || !leak) return null
-    let best: string | null = null, bestD = Infinity
-    for (const s of locations.sensors) {
-      const d = haversineKm({ lat: s.lat, lon: s.lon }, { lat: leak.lat, lon: leak.lon })
-      if (d < bestD) { bestD = d; best = s.id }
-    }
-    return best
-  }, [isLeak, leak, locations.sensors])
 
   /** Derive per-sensor state:
    *  leak_status === 1 → 'leak'

@@ -17,7 +17,6 @@ const defaultFilters: MapFilters = {
 export default function Dashboard() {
   const [status, setStatus] = useState<StatusResponse | null>(null)
   const [locations, setLocations] = useState<LocationsResponse | null>(null)
-  const [loading, setLoading] = useState(true)
   const [metricsData, setMetricsData] = useState<{ t: string, pressure: number, flow: number, vibration: number, temp: number }[]>([])
 
   const refresh = useCallback(async () => {
@@ -26,7 +25,7 @@ export default function Dashboard() {
       setStatus(s)
       setLocations(loc)
     } finally {
-      setLoading(false)
+      // Done syncing
     }
   }, [])
 
@@ -75,7 +74,6 @@ export default function Dashboard() {
     )
   }
 
-  const leakActive = stats.active > 0
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

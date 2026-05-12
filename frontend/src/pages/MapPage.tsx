@@ -1,29 +1,23 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Activity, AlertTriangle, CheckCircle, Filter, Layers,
+  AlertTriangle, CheckCircle, Layers,
   Radio, RefreshCw, ShieldCheck, Zap,
 } from 'lucide-react'
 import { SystemMap } from '../components/SystemMap'
 import { GeospatialMapFrame } from '../components/GeospatialMapFrame'
 import type { LocationsResponse, MapFilters, StatusResponse } from '../types'
 import { getLocations, getStatus, postClearLeak, postSimulateLeak } from '../api/client'
-import { BASE_LAT, BASE_LON } from '../config/region'
 
-const FILTER_LABELS: { key: keyof MapFilters; label: string; color: string }[] = [
-  { key: 'sensors',   label: 'Acoustic sensors',  color: 'text-blue-600 dark:text-blue-400' },
-  { key: 'water',     label: 'Water supply',       color: 'text-sky-600 dark:text-sky-400' },
-  { key: 'teams',     label: 'Maintenance teams',  color: 'text-orange-600 dark:text-orange-400' },
-]
 
 
 export default function MapPage() {
   const [status, setStatus]     = useState<StatusResponse | null>(null)
   const [locations, setLocations] = useState<LocationsResponse | null>(null)
-  const [filters, setFilters]   = useState<MapFilters>({ sensors: true, water: true, teams: true, pipelines: false })
+  const [filters]               = useState<MapFilters>({ sensors: true, water: true, teams: true, pipelines: false })
   const [detail, setDetail]     = useState<{ title: string; body: string } | null>(null)
   const [lastRefresh, setLastRefresh] = useState(Date.now())
-  const [mapCenter, setMapCenter] = useState<[number, number] | undefined>(undefined)
+  const [mapCenter]             = useState<[number, number] | undefined>(undefined)
   const [clearedSensorIds, setClearedSensorIds] = useState<string[]>([])
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bell, CheckCircle, Mail, MessageSquare, Smartphone, AlertTriangle, Clock, MapPin, Wrench, Megaphone, RotateCcw, X } from 'lucide-react'
+import { Bell, CheckCircle, Mail, MessageSquare, Smartphone, AlertTriangle, Clock, MapPin, Wrench, Megaphone, X } from 'lucide-react'
 import type { AlertRecord } from '../types'
 import { getAlerts, postDismissLeak } from '../api/client'
 
@@ -100,13 +100,13 @@ export default function AlertsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-2">
                         <span className="text-xs font-mono text-cyan-400">{a.id.toLowerCase()}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">{a.type === 'MessageSquare' ? 'In-App' : a.type}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">{a.type === 'In-App' ? 'In-App' : a.type}</span>
                         <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Channel: delivered</span>
                         <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">Ops: {stage ? stage.replace('_', ' ') : 'Open'}</span>
                       </div>
                       
                       <h2 className="text-white font-semibold text-lg leading-tight mb-1">
-                        {a.type === 'MessageSquare' ? `Dashboard ping: sens${a.id.replace('ALT-', '')} alert - nearest crew assigned` : 
+                        {a.type === 'In-App' ? `Dashboard ping: sens${a.id.replace('ALT-', '')} alert - nearest crew assigned` : 
                          a.type === 'Email' ? `Dispatch order for sens${a.id.replace('ALT-', '')} repair team dispatched` :
                          `CRITICAL: sens${a.id.replace('ALT-', '')} is leaked (Signal Degraded zone)`}
                       </h2>
