@@ -107,9 +107,11 @@ rf_model = None
 scaler = None
 cnn_model = None
 cnn_spectrogram_model = None
+multimodal_model = None
+multimodal_scaler = None
 
 def load_models():
-    global rf_model, scaler, cnn_model, cnn_spectrogram_model
+    global rf_model, scaler, cnn_model, cnn_spectrogram_model, multimodal_model, multimodal_scaler
     try:
         os.makedirs(MODELS_DIR, exist_ok=True)
         scaler_path = os.path.join(MODELS_DIR, "scaler.joblib")
@@ -130,6 +132,17 @@ def load_models():
         if HAS_TF and os.path.exists(spectrogram_path):
             cnn_spectrogram_model = tf.keras.models.load_model(spectrogram_path)
             print(f"Loaded Spectrogram CNN model from {spectrogram_path}")
+
+        multimodal_path = os.path.join(MODELS_DIR, "multimodal_leak_detector.h5")
+        if HAS_TF and os.path.exists(multimodal_path):
+            multimodal_model = tf.keras.models.load_model(multimodal_path)
+            print(f"Loaded Multimodal model from {multimodal_path}")
+            
+        data_dir = os.path.join(os.path.dirname(__file__), "data")
+        scaler_path_multi = os.path.join(data_dir, "sensor_scaler.pkl")
+        if os.path.exists(scaler_path_multi):
+            multimodal_scaler = joblib.load(scaler_path_multi)
+            print(f"Loaded multimodal scaler from {scaler_path_multi}")
 
     except Exception as e:
         print(f"Error loading models: {e}")
@@ -232,6 +245,14 @@ class PredictBody(BaseModel):
     rpm: float
     operational_hours: float
     use_cnn: bool = False
+
+class MultimodalPredictBody(BaseModel):
+    pressure: float
+    vibration: float
+    flow_rate: float
+    humidity: float
+    temperature: float
+    pipe_velocity: float
 
 class AssignBody(BaseModel):
     leak_lat: float
@@ -470,6 +491,54 @@ async def predict_spectrogram(file: UploadFile = File(...)):
             "is_leak": bool(is_leak),
             "confidence": round(confidence, 4),
             "filename": file.filename,
+            "spectrogram_b64": b64_img
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/predict-multimodal")
+async def predict_multimodal(
+    pressure: float,
+    vibration: float,
+    flow_rate: float,
+    humidity: float,
+    temperature: float,
+    pipe_velocity: float,
+    audio_file: UploadFile = File(...)
+):
+    global multimodal_model, multimodal_scaler
+    if multimodal_model is None or multimodal_scaler is None:
+        return {"error": "Multimodal model or scaler not loaded"}
+    
+    try:
+        # Preprocess Audio
+        content = await audio_file.read()
+        audio_input, b64_img = generate_spectrogram(content)
+        
+        # Preprocess Sensor
+        sensor_data = np.array([[pressure, vibration, flow_rate, humidity, temperature, pipe_velocity]])
+        sensor_scaled = multimodal_scaler.transform(sensor_data)
+        
+        # Predict
+        prob_leak = float(multimodal_model.predict([audio_input, sensor_scaled], verbose=0)[0][0])
+        
+        is_leak = prob_leak > 0.5
+        confidence = prob_leak if is_leak else (1 - prob_leak)
+        
+        # Log event
+        state["events"].append({
+            "time": datetime.now(timezone.utc).isoformat(),
+            "sensor_id": "HYBRID-NODE",
+            "endpoint": "/predict-multimodal",
+            "prediction": "Leak" if is_leak else "Normal",
+            "confidence": round(confidence, 4)
+        })
+        
+        return {
+            "is_leak": bool(is_leak),
+            "confidence": round(confidence, 4),
+            "leak_probability": round(prob_leak, 4),
+            "filename": audio_file.filename,
             "spectrogram_b64": b64_img
         }
     except Exception as e:
