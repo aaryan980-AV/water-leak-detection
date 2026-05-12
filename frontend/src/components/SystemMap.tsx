@@ -172,6 +172,8 @@ interface SystemMapProps {
   className?: string
   minHeight?: string
   onSelect?: (detail: { kind: string; title: string; body: string }) => void
+  /** IDs of sensors that have been recently cleared (green state) */
+  clearedSensorIds?: string[]
   /** Center the map on these coordinates when they change */
   center?: [number, number]
 }
@@ -194,6 +196,7 @@ export function SystemMap({
   className,
   minHeight = 'min-h-[380px]',
   onSelect,
+  clearedSensorIds = [],
   center,
 }: SystemMapProps) {
   const nearestTeam: TeamLoc | undefined = useMemo(() =>
