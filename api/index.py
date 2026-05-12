@@ -10,6 +10,16 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+    role: str = "operator"
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -53,6 +63,34 @@ def preprocess_audio(audio_bytes):
 @app.get("/api/health")
 def health():
     return {"status": "healthy"}
+
+@app.post("/api/auth/signup")
+async def signup(user: UserCreate):
+    # Mock signup - in production, use a database
+    return {
+        "access_token": "mock_token_" + user.email,
+        "token_type": "bearer",
+        "user": {
+            "id": 1,
+            "name": user.name,
+            "email": user.email,
+            "role": user.role
+        }
+    }
+
+@app.post("/api/auth/login")
+async def login(user: UserLogin):
+    # Mock login - in production, verify password
+    return {
+        "access_token": "mock_token_" + user.email,
+        "token_type": "bearer",
+        "user": {
+            "id": 1,
+            "name": "Demo User",
+            "email": user.email,
+            "role": "supervisor"
+        }
+    }
 
 @app.post("/api/predict")
 async def predict(
