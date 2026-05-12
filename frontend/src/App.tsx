@@ -10,6 +10,7 @@ import AlertsPage from './pages/Alerts'
 import Analytics from './pages/Analytics'
 import LoginPage from './pages/Login'
 import SignupPage from './pages/Signup'
+import DeployTest from './pages/DeployTest'
 
 export default function App() {
   return (
@@ -51,6 +52,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Analytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/deploy-test"
+              element={
+                <ProtectedRoute>
+                  <DeployTest />
                 </ProtectedRoute>
               }
             />
