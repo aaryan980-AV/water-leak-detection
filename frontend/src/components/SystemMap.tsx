@@ -152,6 +152,7 @@ const leakZoneIcon = () => L.divIcon({
 /* ─────────────────────────────────────────────────────────────────────────────
    Haversine distance (km) — same formula used in backend assign-team logic
 ───────────────────────────────────────────────────────────────────────────── */
+/*
 function haversineKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
   const R = 6371
   const dLat = ((b.lat - a.lat) * Math.PI) / 180
@@ -161,6 +162,7 @@ function haversineKm(a: { lat: number; lon: number }, b: { lat: number; lon: num
   const x = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2
   return 2 * R * Math.asin(Math.sqrt(x))
 }
+*/
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Props
@@ -225,7 +227,7 @@ export function SystemMap({
    */
   function getSensorState(s: SensorLoc): SensorState {
     if (s.leak_status === 1) return 'leak'
-    if (s.dismissed) return 'cleared'
+    if (s.dismissed || clearedSensorIds.includes(s.id)) return 'cleared'
     return 'normal'
   }
 
