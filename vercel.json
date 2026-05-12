@@ -19,13 +19,8 @@
       "destination": "api/index.py"
     },
     {
-      "source": "/((?!api/).*)",
-      "destination": "/frontend/$1",
-      "continue": true
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/frontend/index.html"
+      "source": "/(.*)",
+      "destination": "/frontend/$1"
     }
   ]
 }
