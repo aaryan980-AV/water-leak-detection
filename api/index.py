@@ -92,6 +92,35 @@ async def login(user: UserLogin):
         }
     }
 
+@app.get("/api/status")
+def get_status():
+    return {
+        "overall": "No Leak",
+        "active_leak_gps": None,
+        "nearest_team_id": None,
+        "updated_at": "2026-05-12T15:00:00Z"
+    }
+
+@app.get("/api/locations")
+def get_locations():
+    return {
+        "sensors": [
+            {"id":"sens101","name":"Dadar Acoustic Node","lat":19.09,"lon":72.8847,"status":"online","last_update":"2026-04-12T10:22:01Z"},
+            {"id":"sens102","name":"Andheri East Junction","lat":19.087,"lon":72.8727,"status":"online","last_update":"2026-04-12T10:21:58Z"}
+        ],
+        "water_sources": [],
+        "teams": [],
+        "pipeline_segments": []
+    }
+
+@app.get("/api/history")
+def get_history():
+    return {"items": []}
+
+@app.get("/api/alerts")
+def get_alerts():
+    return {"items": []}
+
 @app.post("/api/predict")
 async def predict(
     pressure: float = Form(...),
