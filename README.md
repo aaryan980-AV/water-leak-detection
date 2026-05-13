@@ -105,3 +105,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ---
 
 **Built with ❤️ for the future of Smart Cities.**
+
+Author: Aaryan Vaishnav
